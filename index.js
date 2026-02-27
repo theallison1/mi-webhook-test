@@ -1,0 +1,36 @@
+// Copia esto dentro de index.js
+const express = require('express');
+const { exec } = require('child_process');
+const app = express();
+
+app.use(express.json());
+
+app.post('/hooks/deploy-backend-dev', (req, res) => {
+    const githubEvent = req.headers['x-github-event'];
+    const data = req.body;
+    const branch = data.ref; 
+
+    console.log(`--- 🚀 Evento recibido: ${githubEvent} en ${branch} ---`);
+
+    // Responder a GitHub rápido para que no dé timeout
+    res.status(202).json({ message: 'Recibido en Render, procesando script...' });
+
+    // En Render el push suele ser a 'main' por defecto
+    if (githubEvent === 'push' && (branch === 'refs/heads/main' || branch === 'refs/heads/desarrollo')) {
+        const scriptPath = "bash ./deploy-test.sh";
+        
+        console.log(`Ejecutando script: ${scriptPath}`);
+        
+        exec(scriptPath, (err, stdout, stderr) => {
+            if (err) {
+                console.error(`❌ Error al ejecutar: ${err.message}`);
+                return;
+            }
+            console.log(`✅ Resultado del script:\n${stdout}`);
+            if (stderr) console.log(`⚠️ Avisos: ${stderr}`);
+        });
+    }
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`🚀 Webhook activo en puerto ${PORT}`));
