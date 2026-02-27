@@ -1,0 +1,6 @@
+'#!/bin/bash' 
+'echo "------------------------------------------"' 
+'echo "LOG: Iniciando proceso de deploy simulado"' 
+'echo "LOG: Actualizando repositorio de Java..."' 
+'echo "? DEPLOY FINALIZADO CON EXITO"' 
+'echo "------------------------------------------"' 
