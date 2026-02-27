@@ -1,4 +1,3 @@
-// Copia esto dentro de index.js
 const express = require('express');
 const { exec } = require('child_process');
 const app = express();
@@ -8,17 +7,22 @@ app.use(express.json());
 app.post('/hooks/deploy-backend-dev', (req, res) => {
     const githubEvent = req.headers['x-github-event'];
     const data = req.body;
-    const branch = data.ref; 
+    
+    // Validamos que exista data.ref para evitar errores
+    const branch = data && data.ref ? data.ref : 'N/A'; 
 
     console.log(`--- 🚀 Evento recibido: ${githubEvent} en ${branch} ---`);
 
-    // Responder a GitHub rápido para que no dé timeout
-    res.status(202).json({ message: 'Recibido en Render, procesando script...' });
+    res.status(202).json({ message: 'Recibido en Render, procesando...' });
 
-    // En Render el push suele ser a 'main' por defecto
+    // Si es el evento de prueba de GitHub (ping), no hacemos nada más
+    if (githubEvent === 'ping') {
+        console.log('✅ Ping de GitHub recibido correctamente');
+        return;
+    }
+
     if (githubEvent === 'push' && (branch === 'refs/heads/main' || branch === 'refs/heads/desarrollo')) {
         const scriptPath = "bash ./deploy-test.sh";
-        
         console.log(`Ejecutando script: ${scriptPath}`);
         
         exec(scriptPath, (err, stdout, stderr) => {
